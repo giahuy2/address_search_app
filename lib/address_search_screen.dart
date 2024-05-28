@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +7,8 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 class AddressSearchScreen extends StatefulWidget {
+  const AddressSearchScreen({super.key});
+
   @override
   _AddressSearchScreenState createState() => _AddressSearchScreenState();
 }
@@ -30,18 +33,20 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
     });
 
     final response = await http.get(
-      Uri.parse('https://geocode.search.hereapi.com/v1/geocode?q=$query&apiKey=TWcQTYA4vftM0nhJ5nuBd1BZK2xe2mt2hLcC-uC3d7o'),
+      Uri.parse(
+          'https://geocode.search.hereapi.com/v1/geocode?q=$query&apiKey=TWcQTYA4vftM0nhJ5nuBd1BZK2xe2mt2hLcC-uC3d7o'),
     );
 
     if (response.statusCode == 200) {
-      // Xử lý định dạng dữ liệu từ API
-      final utf8Decoder = Utf8Decoder();
+      const utf8Decoder = Utf8Decoder();
       final decodedData = utf8Decoder.convert(response.bodyBytes);
 
       setState(() {
         _searchResults = json.decode(decodedData)['items'];
         _isLoading = false;
-        print(decodedData); // In ra dữ liệu đã được giải mã
+        if (kDebugMode) {
+          print(decodedData);
+        }
       });
     } else {
       setState(() {
@@ -58,7 +63,8 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
   }
 
   void _openGoogleMaps(String address) async {
-    final url = 'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeFull(address)}';
+    final url =
+        'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeFull(address)}';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -80,16 +86,16 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
               controller: _controller,
               decoration: InputDecoration(
                 hintText: 'Nhập địa chỉ',
-                hintStyle: GoogleFonts.roboto(), // Sử dụng font Roboto
+                hintStyle: GoogleFonts.roboto(),
                 suffixIcon: _isLoading
-                    ? CircularProgressIndicator()
+                    ? const CircularProgressIndicator()
                     : IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () => _searchAddress(_controller.text),
-                ),
+                        icon: const Icon(Icons.search),
+                        onPressed: () => _searchAddress(_controller.text),
+                      ),
               ),
               onChanged: (text) => _onSearchChanged(),
-              style: GoogleFonts.roboto(), // Sử dụng font Roboto
+              style: GoogleFonts.roboto(),
             ),
             Expanded(
               child: ListView.builder(
@@ -99,11 +105,11 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
                   return ListTile(
                     title: Text(
                       result['title'],
-                      style: GoogleFonts.roboto(), // Sử dụng font Roboto
+                      style: GoogleFonts.roboto(),
                     ),
                     subtitle: Text(
                       result['address']['label'],
-                      style: GoogleFonts.roboto(), // Sử dụng font Roboto
+                      style: GoogleFonts.roboto(),
                     ),
                     onTap: () => _openGoogleMaps(result['address']['label']),
                   );
